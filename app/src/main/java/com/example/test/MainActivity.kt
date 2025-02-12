@@ -14,6 +14,7 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
+        // Naviger til Galleriaktivitet
         findViewById<Button>(R.id.button_gallery).setOnClickListener {
             val intent = Intent(this, galleriaktivitet::class.java)
             startActivity(intent)

@@ -11,6 +11,14 @@ class SharedViewModel : ViewModel() {
     private val _imageEntries = MutableLiveData<List<imageEntry>>()
     val imageEntries: LiveData<List<imageEntry>> get() = _imageEntries
 
+    // Score
+    private val _score = MutableLiveData(0) // Starter på 0
+    val score: LiveData<Int> get() = _score
+
+    // Score
+    private val _attempt = MutableLiveData(0) // Starter på 0
+    val attempt: LiveData<Int> get() = _attempt
+
     init {
         if (DataStore.imageEntries.isEmpty()) {
             // Legger til dummydata hvis DataStore er tom
@@ -38,16 +46,36 @@ class SharedViewModel : ViewModel() {
 
     // Sorter listen
     fun sortEntries(ascending: Boolean) {
-        val currentList = _imageEntries.value?.toMutableList() ?: mutableListOf()
-        if (ascending) {
-            currentList.sortBy { it.name }
+        val sortedList = if (ascending) {
+            DataStore.imageEntries.sortedBy { it.name }
         } else {
-            currentList.sortByDescending { it.name }
+            DataStore.imageEntries.sortedByDescending { it.name }
         }
-        _imageEntries.value = currentList
+
+        // Oppdater både DataStore og LiveData
+        DataStore.imageEntries.clear()
+        DataStore.imageEntries.addAll(sortedList)
+        _imageEntries.value = DataStore.imageEntries.toList()
     }
 
     fun getAllEntries(): List<imageEntry> {
         return DataStore.imageEntries.toList()
     }
+
+    fun increaseScore(navn:String) {
+        if (navn == "poeng") {
+        _score.value = (_score.value ?: 0) + 1
+        _attempt.value = (_attempt.value ?:0) +1}
+        else {
+            _attempt.value = (_attempt.value ?:0) +1
+        }
+    }
+
+    fun resetScore() {
+        _score.value = 0
+    }
+    fun getScore(): Int? {
+        return _score.value
+    }
 }
+

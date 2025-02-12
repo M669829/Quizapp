@@ -55,6 +55,16 @@ class galleriaktivitet : AppCompatActivity() {
         findViewById<Button>(R.id.button_add_entry).setOnClickListener {
             showAddEntryDialog()
         }
+
+        // Funksjonalitet for "Sort A-Z"-knappen
+        findViewById<Button>(R.id.button_sort_ascending).setOnClickListener {
+            viewModel.sortEntries(ascending = true) // Sorter i stigende rekkefølge
+        }
+
+        // Funksjonalitet for "Sort Z-A"-knappen
+        findViewById<Button>(R.id.button_sort_descending).setOnClickListener {
+            viewModel.sortEntries(ascending = false) // Sorter i synkende rekkefølge
+        }
     }
 
     private fun checkStoragePermission() {
@@ -122,7 +132,7 @@ class galleriaktivitet : AppCompatActivity() {
            // selectedImageResId = R.drawable.test1 // Oppdater med riktig ressurs-ID
         }
     }
-    override fun onSaveInstanceState(outState: Bundle) {
+    /*override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         val entryNames = ArrayList<String>()
         val entryUris = ArrayList<String>()
@@ -146,7 +156,7 @@ class galleriaktivitet : AppCompatActivity() {
                 viewModel.addEntry(entryNames[i], entryUris[i])
             }
         }
-    }
+    } */
 
 }
 

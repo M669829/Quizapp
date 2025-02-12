@@ -1,7 +1,10 @@
 package com.example.test
 
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
@@ -9,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 
 class quizaktivitet : AppCompatActivity() {
+
     private lateinit var quizImage: ImageView
     private lateinit var option1: Button
     private lateinit var option2: Button
@@ -16,6 +20,7 @@ class quizaktivitet : AppCompatActivity() {
     private lateinit var scoreText: TextView
     private lateinit var viewModel: SharedViewModel
     private lateinit var imageEntries: List<imageEntry>
+    private lateinit var knapper: List<Button>
 
     private var correctAnswer: String = ""
     private var score = 0
@@ -29,10 +34,16 @@ class quizaktivitet : AppCompatActivity() {
         viewModel = ViewModelProvider(this)[SharedViewModel::class.java]
         imageEntries = viewModel.getAllEntries()
 
+
         // Sjekk om det finnes data
         if (imageEntries.isEmpty()) {
-            findViewById<TextView>(R.id.quiz_score).text = "No entries available for the quiz"
+            findViewById<TextView>(R.id.quiz_score).text = "Ikke noe innhold enda, vennligst legg til data"
             return
+        }
+
+        // Observer score for å oppdatere UI
+        viewModel.score.observe(this) { score ->
+            scoreText.text = "Score: $score"
         }
 
         // Initialiser UI-elementer
@@ -41,6 +52,8 @@ class quizaktivitet : AppCompatActivity() {
         option2 = findViewById(R.id.option_2)
         option3 = findViewById(R.id.option_3)
         scoreText = findViewById(R.id.quiz_score)
+        //lager liste med knappene
+        knapper = listOf(option1,option2,option3)
 
         // Start første spørsmål
         loadNewQuestion()
@@ -67,7 +80,7 @@ class quizaktivitet : AppCompatActivity() {
         option3.setOnClickListener { checkAnswer(option3.text.toString()) }
     }
 
-    private fun checkAnswer(selectedAnswer: String) {
+    /* private fun checkAnswer(selectedAnswer: String) {
         attempts++
         if (selectedAnswer == correctAnswer) {
             score++
@@ -78,5 +91,56 @@ class quizaktivitet : AppCompatActivity() {
 
         // Last inn nytt spørsmål
         loadNewQuestion()
+    }*/
+    private fun checkAnswer(selectedAnswer: String) {
+        attempts++
+
+        // Finn knappen som brukeren trykket på
+        val selectedButton = when (selectedAnswer) {
+            option1.text.toString() -> option1
+            option2.text.toString() -> option2
+            option3.text.toString() -> option3
+            else -> null
+        }
+
+        // Finn riktig svar-knapp
+        val correctButton = when (correctAnswer) {
+            option1.text.toString() -> option1
+            option2.text.toString() -> option2
+            option3.text.toString() -> option3
+            else -> null
+        }
+
+        if (selectedAnswer == correctAnswer) {
+            viewModel.increaseScore("poeng") // Oppdater score i ViewModel
+            scoreText.text = "Score: $score/$attempts"
+
+            // Sett grønn farge på riktig knapp
+            correctButton?.setBackgroundColor(Color.GREEN)
+        } else {
+            viewModel.increaseScore("")
+            scoreText.text = "Feil! Riktig svar: $correctAnswer\nScore: $score/$attempts"
+
+            // Sett rød farge på feil knapp
+            selectedButton?.setBackgroundColor(Color.RED)
+            // Sett grønn farge på riktig svar
+            correctButton?.setBackgroundColor(Color.GREEN)
+        }
+        //Deaktiverer knappene etter inigialieringen
+        gjørmedknapper(knapper) { button -> button.isEnabled = false}
+        // Vent 1 sekund før neste spørsmål lastes inn
+        Handler(Looper.getMainLooper()).postDelayed({
+            gjørmedknapper(knapper) { button ->
+                button.setBackgroundColor(Color.parseColor("#6A1B9A")) // Lilla farge
+            } // Tilbakestill knappene før nytt spørsmål
+            gjørmedknapper(knapper) { button -> button.isEnabled = true} //Aktiverer knappene igjen
+            loadNewQuestion()
+        }, 1200) // 1000 ms = 1 sekund
+
+
+    }
+
+    private fun gjørmedknapper(buttons: List<Button>, action: (Button) -> Unit) {
+        buttons.forEach {  button -> action(button) }
     }
 }
